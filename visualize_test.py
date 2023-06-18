@@ -12,7 +12,7 @@ import os
 # get directory path
 # dir_path = os.path.dirname(os.path.realpath(__file__))
 # psg_data = mne.io.read_raw_edf(dir_path+'datasets\SN001.edf', preload=True)  # load data into memory
-psg_data = mne.io.read_raw_edf('.\datasets\SN001.edf', preload=True)  # load data into memory
+psg_data = mne.io.read_raw_edf('../datasets/SN001.edf', preload=True)  # load data into memory
 
 print(psg_data.ch_names)
 print(psg_data.annotations) # there are no annotations in this edf file

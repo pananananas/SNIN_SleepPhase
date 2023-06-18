@@ -1,12 +1,14 @@
 import tensorflow as tf
+import os
 import mne
 import math
 import numpy as np
+import pandas as pd
 from progressbar import ProgressBar, Percentage, Bar, FormatLabel
 
 def read_data():
-    raw_data = mne.io.read_raw_edf('./datasets/SN001.edf', preload=True)
-    scoring = mne.read_annotations('./datasets/SN001_sleepscoring.edf')
+    raw_data = mne.io.read_raw_edf('../datasets/SN001.edf', preload=True)
+    scoring = mne.read_annotations('../datasets/SN001_sleepscoring.edf')
     return raw_data, scoring
 
 """identified problems:
@@ -46,6 +48,23 @@ def map_classes(raw_labels: list[str]) -> list[int]:
     return numeric_labels
 
 
+def save_to_csv(X, Y):
+    output_dir = './output'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    print("Saving data to CSV files...")
+
+    # Save the X array to a CSV file
+    for i in range(X.shape[0]):
+        df = pd.DataFrame(X[i])
+        df.to_csv(os.path.join(output_dir, f'interval_{i}.csv'), index=False)
+        
+    # Save the Y array to a CSV file
+    df = pd.DataFrame(Y, columns=['Label'])
+    df.to_csv(os.path.join(output_dir, 'labels.csv'), index=False)
+    print("Done!")
+
 
 def prepare_training_dataset(raw_data, raw_labels):
     X = []
@@ -82,8 +101,13 @@ def prepare_training_dataset(raw_data, raw_labels):
 def main():
     raw_data, raw_scoring = read_data()
     X, Y = prepare_training_dataset(raw_data, raw_scoring)
+    X = np.stack(X)
+    Y = np.array(Y)
+    
     model = define_model()
     model.fit(X, Y, epochs=2)
+    
+    save_to_csv(X, Y)
     # TODO Keras jest wrażliwy na typy tablic - X to jest lista tablic dwuwymiarowych.
     # Y to lista - tablica jednowymiarowa. Trzeba zrobić tak, żeby każda tablica/lista były w typach "numpy-owych"
     # czyli X to by była np.array zawierające tablice wielowymiarowe np.ndarray.
